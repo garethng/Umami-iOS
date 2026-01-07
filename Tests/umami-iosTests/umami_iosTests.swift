@@ -90,6 +90,42 @@ private func makeSession() -> URLSession {
     return URLSession(configuration: config)
 }
 
+private func makeIsolatedDefaults() -> (suiteName: String, defaults: UserDefaults) {
+    let suiteName = "umami-ios.tests.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    defaults.removePersistentDomain(forName: suiteName)
+    return (suiteName, defaults)
+}
+
+@Test func userIdentifier_getOrCreate_persistsInUserDefaults() async throws {
+    let (suiteName, defaults) = makeIsolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suiteName) }
+
+    let key = "user-id"
+    let id1 = UmamiUserIdentifier.getOrCreate(defaults: defaults, key: key)
+    #expect(UUID(uuidString: id1) != nil)
+    #expect(defaults.string(forKey: key) == id1)
+
+    let id2 = UmamiUserIdentifier.getOrCreate(defaults: defaults, key: key)
+    #expect(id2 == id1)
+}
+
+@Test func userIdentifier_getOrCreate_overwritesInvalidValue() async throws {
+    let (suiteName, defaults) = makeIsolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suiteName) }
+
+    let key = "user-id"
+    defaults.set("not-a-uuid", forKey: key)
+
+    let id = UmamiUserIdentifier.getOrCreate(defaults: defaults, key: key)
+    #expect(UUID(uuidString: id) != nil)
+    #expect(defaults.string(forKey: key) == id)
+}
+
+@Test func defaultUserAgent_isNil_usesSystemUserAgent() async throws {
+    #expect(UmamiConfiguration.defaultUserAgent == nil)
+}
+
 @Test func trackPageView_buildsExpectedRequest() async throws {
     let serverURL = try #require(URL(string: "https://analytics.example.com"))
     let testID = UUID().uuidString
@@ -100,6 +136,7 @@ private func makeSession() -> URLSession {
             websiteID: "website-123",
             hostName: "com.example.app",
             language: "zh-CN",
+            userID: "user-123",
             userAgent: "TestUA/1.0",
             additionalHeaders: ["X-Test": "1", MockURLProtocol.routingHeader: testID]
         ),
@@ -125,6 +162,7 @@ private func makeSession() -> URLSession {
         #expect(payload?["url"] as? String == "app://home")
         #expect(payload?["title"] as? String == "Home")
         #expect(payload?["referrer"] as? String == "app://launch")
+        #expect(payload?["id"] as? String == "user-123")
 
         let resp = HTTPURLResponse(url: req.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
         return (resp, Data())
@@ -134,7 +172,7 @@ private func makeSession() -> URLSession {
 }
 
 @Test func trackEvent_buildsExpectedRequest() async throws {
-    let serverURL = try #require(URL(string: "https://analytics.example.com"))
+    let serverURL = try #require(URL(string: "https://cloud.umami.is"))
     let testID = UUID().uuidString
     let session = makeSession()
     let client = UmamiClient(
@@ -143,6 +181,7 @@ private func makeSession() -> URLSession {
             websiteID: "website-123",
             hostName: "com.example.app",
             language: "en-US",
+            userID: "user-xyz",
             userAgent: nil,
             additionalHeaders: [MockURLProtocol.routingHeader: testID]
         ),
@@ -157,10 +196,11 @@ private func makeSession() -> URLSession {
 
         #expect(type == "event")
         #expect(payload?["website"] as? String == "website-123")
-        #expect(payload?["event_type"] as? String == "signup")
-        #expect(payload?["event_value"] as? String == "1")
+        #expect(payload?["name"] as? String == "signup")
         #expect(payload?["url"] as? String == "app://signup")
+        #expect((payload?["data"] as? [String: Any])?["value"] as? String == "1")
         #expect((payload?["data"] as? [String: Any])?["plan"] as? String == "pro")
+        #expect(payload?["id"] as? String == "user-xyz")
 
         let resp = HTTPURLResponse(url: req.url!, statusCode: 204, httpVersion: nil, headerFields: nil)!
         return (resp, Data())
@@ -173,3 +213,4 @@ private func makeSession() -> URLSession {
         data: ["plan": "pro"]
     )
 }
+

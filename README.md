@@ -73,6 +73,9 @@ Task {
 
 - `url`: iOS doesn’t have a browser address bar. It’s recommended to use your own scheme (e.g. `app://`) to map screens/routes to Umami consistently.
 - `hostName`: defaults to the bundle id (you can change it to app name, channel, etc. if needed).
+- `userID`: defaults to a UUID stored in `UserDefaults` (key: `umami_ios.user_id`). It is sent as `payload.id` on every request. You can override it via `UmamiConfiguration(userID:)`.
+- `userAgent`: by default we do not override the header (use the system networking stack User-Agent). You can override it via `UmamiConfiguration(userAgent:)` if your setup requires.
+- Events: `trackEvent` sends `payload.name` and `payload.data` to align with Umami’s `/api/send` API. The `value` parameter is merged into `data["value"]` for convenience.
 - Logging: silent by default. To integrate with your own logging system, implement `UmamiLogging` and inject it when creating `UmamiClient`.
 
 

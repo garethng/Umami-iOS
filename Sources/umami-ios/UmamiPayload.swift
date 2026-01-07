@@ -21,6 +21,12 @@ struct UmamiBasePayload: Encodable, Sendable {
     let url: String
     let referrer: String?
     let title: String?
+    /// Additional tag description (optional).
+    let tag: String?
+    /// Session identifier (optional).
+    let id: String?
+    /// Extra key-value payload (some Umami setups accept this for pageviews too).
+    let data: [String: String]?
 }
 
 struct UmamiEventPayload: Encodable, Sendable {
@@ -32,27 +38,17 @@ struct UmamiEventPayload: Encodable, Sendable {
     let referrer: String?
     let title: String?
 
-    /// Umami commonly uses `event_type` as the event name field (keep compatibility).
-    let eventType: String
+    /// Name of the event.
+    let name: String
 
-    /// Umami commonly uses `event_value` as the event value field (string).
-    let eventValue: String?
-
-    /// Extra key-value payload (if your Umami instance / gateway allows pass-through).
+    /// Extra key-value payload (official `/api/send` supports an object here).
     let data: [String: String]?
 
-    enum CodingKeys: String, CodingKey {
-        case website
-        case hostname
-        case language
-        case screen
-        case url
-        case referrer
-        case title
-        case eventType = "event_type"
-        case eventValue = "event_value"
-        case data
-    }
+    /// Additional tag description (optional).
+    let tag: String?
+
+    /// Session identifier (optional).
+    let id: String?
 }
 
 

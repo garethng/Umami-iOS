@@ -20,7 +20,16 @@ public struct UmamiConfiguration: Sendable, Equatable {
     /// Maps to `language` in Umami's payload.
     public var language: String?
 
-    /// Whether to send a `User-Agent` header (some proxies / firewalls may rely on it).
+    /// Persistent user identifier (UUID string).
+    ///
+    /// Defaults to a UUID stored in `UserDefaults` (generated once and reused).
+    /// This value is sent as `payload.id` on every request.
+    public var userID: String
+
+    /// Optional `User-Agent` header.
+    ///
+    /// If `nil`, we do not override the header and let the system networking stack
+    /// provide the device's default User-Agent.
     public var userAgent: String?
 
     /// Extra static headers (e.g. required by your gateway).
@@ -32,13 +41,8 @@ public struct UmamiConfiguration: Sendable, Equatable {
         sendPath: String = "/api/send",
         hostName: String = (Bundle.main.bundleIdentifier ?? "ios"),
         language: String? = Locale.preferredLanguages.first,
-        userAgent: String? = {
-            let bundle = Bundle.main
-            let name = (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String) ?? "App"
-            let version = (bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? "0"
-            let build = (bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String) ?? "0"
-            return "\(name)/\(version) (\(build))"
-        }(),
+        userID: String = UmamiUserIdentifier.getOrCreate(),
+        userAgent: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) {
         self.serverURL = serverURL
@@ -46,6 +50,7 @@ public struct UmamiConfiguration: Sendable, Equatable {
         self.sendPath = sendPath
         self.hostName = hostName
         self.language = language
+        self.userID = userID
         self.userAgent = userAgent
         self.additionalHeaders = additionalHeaders
     }
@@ -61,12 +66,8 @@ extension UmamiConfiguration {
     }
 
     public static var defaultUserAgent: String? {
-        // Lightweight UA: optional, not required by default.
-        let bundle = Bundle.main
-        let name = (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String) ?? "App"
-        let version = (bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? "0"
-        let build = (bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String) ?? "0"
-        return "\(name)/\(version) (\(build))"
+        // By default, do not override User-Agent: use system networking stack UA.
+        nil
     }
 }
 

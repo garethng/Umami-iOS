@@ -39,7 +39,10 @@ public actor UmamiClient {
             screen: Self.screenString(),
             url: url,
             referrer: referrer,
-            title: title
+            title: title,
+            tag: nil,
+            id: config.userID,
+            data: nil
         )
 
         let req = UmamiSendRequest(type: .pageview, payload: payload)
@@ -49,20 +52,27 @@ public actor UmamiClient {
     /// Track a custom event.
     ///
     /// - Parameters:
-    ///   - name: Event name (mapped to Umami `event_type`).
-    ///   - value: Event value (mapped to Umami `event_value`, optional).
+    ///   - name: Event name (mapped to Umami `payload.name`).
+    ///   - value: Convenience value (merged into `payload.data["value"]` if provided).
     ///   - url: Screen/route associated with the event (same semantics as pageview's `url`).
     ///   - title: Screen title / name (optional).
     ///   - referrer: Optional referrer.
-    ///   - data: Extra key-value data (if your Umami instance / gateway allows pass-through).
+    ///   - tag: Optional tag description.
+    ///   - data: Extra key-value data (sent as `payload.data`).
     public func trackEvent(
         name: String,
         value: String? = nil,
         url: String,
         title: String? = nil,
         referrer: String? = nil,
+        tag: String? = nil,
         data: [String: String]? = nil
     ) async throws {
+        var mergedData = data ?? [:]
+        if let value {
+            mergedData["value"] = value
+        }
+
         let payload = UmamiEventPayload(
             website: config.websiteID,
             hostname: config.hostName,
@@ -71,9 +81,10 @@ public actor UmamiClient {
             url: url,
             referrer: referrer,
             title: title,
-            eventType: name,
-            eventValue: value,
-            data: data
+            name: name,
+            data: mergedData.isEmpty ? nil : mergedData,
+            tag: tag,
+            id: config.userID
         )
 
         let req = UmamiSendRequest(type: .event, payload: payload)
