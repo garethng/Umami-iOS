@@ -4,7 +4,37 @@ A lightweight Swift Package for iOS that sends tracking data to Umami via HTTP (
 
 ## Installation
 
-Add this repository to your app’s **Package Dependencies**, then `import umami_ios`.
+### Swift Package Manager (SPM)
+
+#### Xcode
+
+- In Xcode: **File → Add Package Dependencies…**
+- Paste the repository URL
+- Add the product **`umami-ios`** to your app target
+- Then `import umami_ios`
+
+#### Package.swift
+
+Add the dependency and product to your `Package.swift`:
+
+```swift
+// Package.swift
+dependencies: [
+    // If you haven't published a semver tag yet, depend on the main branch:
+    .package(url: "https://github.com/garethng/Umami-iOS.git", branch: "main"),
+    //
+    // Or, once you publish tags (recommended), use:
+    // .package(url: "https://github.com/garethng/Umami-iOS.git", from: "0.1.0"),
+],
+targets: [
+    .target(
+        name: "YourTarget",
+        dependencies: [
+            .product(name: "umami-ios", package: "umami-ios"),
+        ]
+    ),
+]
+```
 
 ## Usage
 
