@@ -4,7 +4,7 @@ import Foundation
 import UIKit
 #endif
 
-/// Umami 上报客户端（面向 iOS）。
+/// Umami tracking client (for iOS).
 public actor UmamiClient {
     private let config: UmamiConfiguration
     private let session: URLSession
@@ -20,12 +20,13 @@ public actor UmamiClient {
         self.logger = logger
     }
 
-    /// 上报一次页面访问（pageview）。
+    /// Track a page view.
     ///
     /// - Parameters:
-    ///   - url: 建议使用你自己定义的“虚拟 URL”（例如 `app://home`、`app://settings/profile`），用于在 Umami 里区分页面/路由。
-    ///   - title: 页面标题/屏幕名称。
-    ///   - referrer: 来源（可选）。
+    ///   - url: Use a stable “virtual URL” to represent your screen/route
+    ///          (e.g. `app://home`, `app://settings/profile`).
+    ///   - title: Screen title / name.
+    ///   - referrer: Optional referrer.
     public func trackPageView(
         url: String,
         title: String? = nil,
@@ -45,15 +46,15 @@ public actor UmamiClient {
         try await send(req)
     }
 
-    /// 上报一次自定义事件（event）。
+    /// Track a custom event.
     ///
     /// - Parameters:
-    ///   - name: 事件名（映射到 Umami 的 `event_type`）。
-    ///   - value: 事件值（映射到 Umami 的 `event_value`，可选）。
-    ///   - url: 事件关联的页面/路由（同 pageview 的 url 语义）。
-    ///   - title: 事件关联的页面标题/屏幕名称（可选）。
-    ///   - referrer: 来源（可选）。
-    ///   - data: 额外 key-value（如果你的 Umami/网关接受透传）。
+    ///   - name: Event name (mapped to Umami `event_type`).
+    ///   - value: Event value (mapped to Umami `event_value`, optional).
+    ///   - url: Screen/route associated with the event (same semantics as pageview's `url`).
+    ///   - title: Screen title / name (optional).
+    ///   - referrer: Optional referrer.
+    ///   - data: Extra key-value data (if your Umami instance / gateway allows pass-through).
     public func trackEvent(
         name: String,
         value: String? = nil,
@@ -136,7 +137,7 @@ extension UmamiClient {
 }
 
 extension URLSession {
-    /// iOS 13 / macOS 11 兼容的 async 包装（避免 `URLSession.data(for:)` 的可用性限制）。
+    /// iOS 13 / macOS 11 compatible async wrapper (avoids availability constraints of `URLSession.data(for:)`).
     func dataCompat(for request: URLRequest) async throws -> (Data, URLResponse) {
         try await withCheckedThrowingContinuation { continuation in
             let task = dataTask(with: request) { data, response, error in

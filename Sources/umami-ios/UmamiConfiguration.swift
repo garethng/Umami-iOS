@@ -1,37 +1,44 @@
 import Foundation
 
-/// Umami 上报配置。
+/// Umami tracking configuration.
 public struct UmamiConfiguration: Sendable, Equatable {
-    /// 例如：`https://analytics.example.com`
+    /// Example: `https://analytics.example.com`
     public var serverURL: URL
 
-    /// Umami Website ID（UUID 字符串）。
+    /// Umami Website ID (UUID string).
     public var websiteID: String
 
-    /// 上报 endpoint 路径。默认是 Umami tracker 常用的 `/api/send`。
+    /// Send endpoint path. Defaults to `/api/send` (commonly used by Umami's tracker).
     public var sendPath: String
 
-    /// 对应 Umami payload 里的 `hostname`。
+    /// Maps to `hostname` in Umami's payload.
     ///
-    /// Web 端通常是 `location.hostname`；iOS 场景建议用 bundle id 或你的 app 名。
+    /// On the web, this is typically `location.hostname`.
+    /// On iOS, it's recommended to use your bundle id or app name.
     public var hostName: String
 
-    /// 对应 Umami payload 里的 `language`。
+    /// Maps to `language` in Umami's payload.
     public var language: String?
 
-    /// 是否携带 `User-Agent` 头（部分反向代理/防火墙可能依赖它）。
+    /// Whether to send a `User-Agent` header (some proxies / firewalls may rely on it).
     public var userAgent: String?
 
-    /// 额外固定请求头（比如你自建网关需要的 header）。
+    /// Extra static headers (e.g. required by your gateway).
     public var additionalHeaders: [String: String]
 
     public init(
         serverURL: URL,
         websiteID: String,
         sendPath: String = "/api/send",
-        hostName: String = UmamiConfiguration.defaultHostName,
-        language: String? = UmamiConfiguration.defaultLanguage,
-        userAgent: String? = UmamiConfiguration.defaultUserAgent,
+        hostName: String = (Bundle.main.bundleIdentifier ?? "ios"),
+        language: String? = Locale.preferredLanguages.first,
+        userAgent: String? = {
+            let bundle = Bundle.main
+            let name = (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String) ?? "App"
+            let version = (bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? "0"
+            let build = (bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String) ?? "0"
+            return "\(name)/\(version) (\(build))"
+        }(),
         additionalHeaders: [String: String] = [:]
     ) {
         self.serverURL = serverURL
@@ -54,7 +61,7 @@ extension UmamiConfiguration {
     }
 
     public static var defaultUserAgent: String? {
-        // 轻量 UA：有就带，没有也不强依赖
+        // Lightweight UA: optional, not required by default.
         let bundle = Bundle.main
         let name = (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String) ?? "App"
         let version = (bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? "0"

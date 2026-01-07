@@ -10,7 +10,9 @@ struct UmamiSendRequest<Payload: Encodable>: Encodable {
     let payload: Payload
 }
 
-/// 对齐 Umami tracker 的常见字段集合（iOS 侧部分字段由调用方提供）。
+/// Common fields typically used by Umami's tracker payload.
+///
+/// On iOS, some fields need to be provided by the caller.
 struct UmamiBasePayload: Encodable, Sendable {
     let website: String
     let hostname: String
@@ -30,13 +32,13 @@ struct UmamiEventPayload: Encodable, Sendable {
     let referrer: String?
     let title: String?
 
-    /// Umami 里事件类型字段通常用 `event_type`（保持兼容）。
+    /// Umami commonly uses `event_type` as the event name field (keep compatibility).
     let eventType: String
 
-    /// Umami 里事件值字段通常用 `event_value`（字符串）。
+    /// Umami commonly uses `event_value` as the event value field (string).
     let eventValue: String?
 
-    /// 额外自定义字段（如果你的 Umami/网关允许透传）。
+    /// Extra key-value payload (if your Umami instance / gateway allows pass-through).
     let data: [String: String]?
 
     enum CodingKeys: String, CodingKey {

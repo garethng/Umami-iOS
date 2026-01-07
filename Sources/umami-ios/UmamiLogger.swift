@@ -1,6 +1,9 @@
 import Foundation
 
-/// 轻量日志接口（默认静默）。你可以注入实现把日志接到你自己的 logger（例如 OSLog、CocoaLumberjack 等）。
+/// Lightweight logging interface (silent by default).
+///
+/// You can inject your own implementation to bridge logs into your logging stack
+/// (e.g. OSLog, CocoaLumberjack, etc.).
 public protocol UmamiLogging: Sendable {
     func log(_ message: String)
 }

@@ -48,7 +48,7 @@ final class MockURLProtocol: URLProtocol {
 }
 
 extension MockURLProtocol {
-    /// URLSession 可能把 body 放在 `httpBodyStream` 里；这里统一成 `httpBody` 方便测试断言。
+    /// URLSession may store the body in `httpBodyStream`; normalize into `httpBody` for test assertions.
     static func normalizedRequest(_ request: URLRequest) -> URLRequest {
         var req = request
         if req.httpBody == nil, let stream = req.httpBodyStream {

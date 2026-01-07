@@ -1,5 +1,5 @@
-/// `umami-ios` — 在 iOS 中通过 HTTP 调用 Umami `/api/send` 的轻量封装。
+/// `umami-ios` — a lightweight iOS wrapper for sending data to Umami via HTTP (`/api/send`).
 ///
-/// 入口类型：
+/// Main entry points:
 /// - ``UmamiConfiguration``
 /// - ``UmamiClient``
