@@ -45,7 +45,7 @@ public actor UmamiClient {
             data: nil
         )
 
-        let req = UmamiSendRequest(type: .pageview, payload: payload)
+        let req = UmamiSendRequest(type: .event, payload: payload)
         try await send(req)
     }
 
@@ -81,7 +81,7 @@ public actor UmamiClient {
             url: url,
             referrer: referrer,
             title: title,
-            name: name,
+            eventName: name,
             data: mergedData.isEmpty ? nil : mergedData,
             tag: tag,
             id: config.userID
