@@ -81,7 +81,7 @@ public actor UmamiClient {
             url: url,
             referrer: referrer,
             title: title,
-            eventName: name,
+            name: name,
             data: mergedData.isEmpty ? nil : mergedData,
             tag: tag,
             id: config.userID

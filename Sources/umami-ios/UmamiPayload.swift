@@ -39,7 +39,7 @@ struct UmamiEventPayload: Encodable, Sendable {
     let title: String?
 
     /// Name of the event.
-    let eventName: String
+    let name: String
 
     /// Extra key-value payload (official `/api/send` supports an object here).
     let data: [String: String]?
